@@ -4,3 +4,11 @@
     align-items: center;
     justify-content: space-between;
 }
+
+.form-label {
+    margin: 5px 10px 0px 0px;
+}
+
+.form-control, .form-select {
+    max-width: 85%;
+}

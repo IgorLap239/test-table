@@ -17,14 +17,46 @@ const ContentTable = ({
   const [rowsState, setRowsState] = useState(rows);
   const [editedRow, setEditedRow] = useState();
   const [visible, setVisible] = useState(false);
+  const [search, setSearch] = useState();  
 
-  const handleEdit = (rowID) => {
+  useEffect(() => {
+    const filteredArr = rows;
+    if (search) {
+      let newArray = filteredArr.filter(function (el) {
+        let counter = 0;
+        Object.keys(el).forEach((k) => {
+          if (k !== 'id') {
+            const searchReg = new RegExp(`${search[k]}`, 'i');
+            if (String(el[k][0]).match(searchReg)) {
+              counter += 1;
+            }
+          }
+        })
+        return counter === Object.keys(search).length;
+      });
+      setRowsState(newArray);
+    }
+  }, [search])
+
+  const changeSearchValue = (e, column) => {
+    e.target.nextElementSibling.style.transform = (e.target.value !== '') ? 'scaleX(1)' : '';
+    if (!search) {
+      setSearch({[column]: e.target.value});
+    } else {
+      setSearch(prevState => ({
+        ...prevState,
+        [column]: e.target.value
+      }))
+    }
+  }
+
+  const editRow = (rowID) => {
     setIsEditMode(true);
     setEditedRow(undefined);
     setRowIDToEdit(rowID);
   }
 
-  const handleRemoveRow = (rowID) => {
+  const removeRow = (rowID) => {
     const newData = rowsState.filter(row => {
       return row.id !== rowID ? row : null;
     });
@@ -32,7 +64,7 @@ const ContentTable = ({
     localStorage.setItem("tableRows", JSON.stringify(newData));
   }
 
-  const handleRemoveColumn = (field) => {
+  const removeColumn = (field) => {
     const newColumns = columns.filter(column => {
       return column.field !== field ? column : null;
     });
@@ -44,7 +76,7 @@ const ContentTable = ({
     localStorage.setItem("tableColumns", JSON.stringify(newColumns));
   }
 
-  const handleOnChangeField = (e, rowID) => {
+  const onChangeField = (e, rowID) => {
     const { name: fieldName, value } = e.target;
     const editedRowField = rowsState.filter(function(row) {
       return row.id === rowID;
@@ -75,12 +107,12 @@ const ContentTable = ({
     }
   }
 
-  const handleCancelEditing = () => {
+  const cancelEditing = () => {
     setIsEditMode(false);
     setEditedRow(undefined);
   }
 
-  const handleSaveRowChanges = () => {
+  const saveRowChanges = () => {
     setIsEditMode(false);
     const newData = rowsState.map(row => {
       if (row.id === editedRow.id) {
@@ -126,8 +158,13 @@ const ContentTable = ({
     return moment(new Date(dateArr.join(', '))).format('YYYY-MM-DD');
   }
 
+  const clearInput = (e) => {
+    e.target.previousElementSibling.value='';
+    e.target.previousElementSibling.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+
   return (
-    <div>
+    <div className='table-wrapper'>
       <ModalWindow
         visible={visible}
         setVisible={setVisible}
@@ -136,15 +173,27 @@ const ContentTable = ({
         rows={rows}
         setRows={setRows}
       />
-      <Table striped bordered hover>
+      <Table className='content-table' striped bordered hover>
         <thead>
           <tr>
             {columns.map((column) => {
-              return <th key={column.field}>
-                { column.fieldName}
-                <button onClick={() => handleRemoveColumn(column.field)} className='custom-table__action-btn'>
-                  <Trash />
-                </button>
+              return <th className='table-title' key={column.field}>
+                <div>
+                  { column.fieldName}
+                  <button 
+                  onClick={() => removeColumn(column.field)} 
+                  className='custom-table__action-btn'
+                  >
+                    <Trash />
+                  </button>
+                </div>
+                <input 
+                  className='search' 
+                  type="text" 
+                  placeholder="Фильтр"
+                  onInput={(e)=>changeSearchValue(e, column.field)}
+                />
+                <span onClick={clearInput}>×</span>
               </th>
             })}
             <th key={'button'}>
@@ -153,20 +202,20 @@ const ContentTable = ({
           </tr>
         </thead>
         <tbody>
-          {rowsState.map((row) => {
+        {rowsState.map((row) => {
             let index = 0;
             return <tr key={row.id}>
               {Object.keys(row).map((k) => {
                 if (k !== 'id') {
                   index += 1;
-                  return <td key={`${row.id}.${index}`}>
+                  return <td className='table-cell' key={`${row.id}.${index}`}>
                     { isEditMode && rowIDToEdit === row.id
                     ? <Form.Control
                     type={row[k][1]}
                     defaultValue={(row[k][1] === "date" ? refactorDate(row[k][0]) : (editedRow) ? editedRow.k : row[k][0])}
                     id={row.id}
                     name={k}
-                    onChange={(e) => handleOnChangeField(e, row.id)}
+                    onChange={(e) => onChangeField(e, row.id)}
                   />
                   : row[k][0]
                 }
@@ -176,20 +225,20 @@ const ContentTable = ({
                 }
               })}
               {actions &&
-          <td>
+          <td className='table-cell'>
             { isEditMode && rowIDToEdit === row.id
-              ? <button onClick={ () => handleSaveRowChanges() } className='custom-table__action-btn' disabled={!editedRow}>
+              ? <button className='custom-table__action-btn' onClick={ () => saveRowChanges() } disabled={!editedRow}>
                 <Save />
               </button>
-              : <button  onClick={ () => handleEdit(row.id) } className='custom-table__action-btn'>
+              : <button className='custom-table__action-btn' onClick={ () => editRow(row.id) } >
                 <PencilFill />
               </button>
             }
             { isEditMode && rowIDToEdit === row.id
-              ? <button onClick={() => handleCancelEditing()} className='custom-table__action-btn'>
+              ? <button className='custom-table__action-btn' onClick={() => cancelEditing()}>
                 <XSquare />
               </button>
-              : <button onClick={() => handleRemoveRow(row.id)} className='custom-table__action-btn'>
+              : <button onClick={() => removeRow(row.id)} className='custom-table__action-btn'>
                 <Trash />
               </button>
             }
@@ -199,7 +248,7 @@ const ContentTable = ({
           })}
         </tbody>
       </Table>
-      <Button variant='primary' onClick={addRow}>Add row</Button>
+      <Button className='add-dutton' variant='primary' onClick={addRow}>Add row</Button>
     </div>
   );
 };

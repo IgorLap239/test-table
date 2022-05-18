@@ -1,12 +1,18 @@
-table {
+.table-wrapper {
+  max-width: 80%;
   margin: auto;
+  overflow-x: auto;
 }
 
-th button {
-  margin-left: 10px; 
+.content-table {
+  width: 100%;
 }
 
-td {
+.table-title, .table-cell {
+  min-width: 200px;
+}
+
+.table-cell {
   vertical-align: middle;
 }
 
@@ -17,9 +23,36 @@ td {
   margin-right: 5px;
 }
 
+.table-title .custom-table__action-btn {
+  margin-left: 10px; 
+}
+
 svg {
   pointer-events: none;
   padding: 5px;
   width: 1.7em;
   height: 1.7em;
+}
+
+.search {
+  margin-top: 5px;
+  max-width: 300px;
+  font-size: 14px;
+  padding: 5px 5px 5px 5px;
+  border: 1px solid #ddd;
+}
+
+.search + span {
+  display: inline-block;
+  height: 19px;
+  width: 19px;
+  border: 2px solid rgba(33, 110, 243, 0.44);
+  border-radius: 50%;
+  background-color: #fff;
+  line-height: 13px;
+  text-align: center;
+  transform: scaleX(0);
+  transition: transform .4s ease;
+  cursor: pointer;
+  color: red;
 }

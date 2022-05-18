@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form, Modal, Button } from 'react-bootstrap';
 import moment from 'moment';
 import './ModalWindow.css'
@@ -33,7 +33,7 @@ const ModalWindow = ({ visible,
     const { value } = e.target;
     let reg = /.*/;
     if (type === 'number') {
-      reg = /^0$|(^0\.(0{1,5})?)$/;
+      reg = /^0$|(^0\.(0{1,8})?)$/;
     } else if (type === 'date') {
       reg = /^(?:(?:дд|ДД|dd|DD|мм|ММ|mm|MM|гггг|ГГГГ|гг|ГГ|yy|yyyy|YY|YYYY))(?:\/|-|\.)(?:(?:дд|ДД|dd|DD|мм|ММ|mm|MM|гггг|ГГГГ|гг|ГГ|yy|yyyy|YY|YYYY))(?:\/|-|\.)(?:(?:дд|ДД|dd|DD|мм|ММ|mm|MM|гггг|ГГГГ|гг|ГГ|yyyy|YYYY|YY|yy))$/
     }
@@ -56,8 +56,8 @@ const ModalWindow = ({ visible,
     let resFormat = format;
     if (type === 'number') {
       if (resFormat !== '0') {
-      resFormat = format.split('.')[1].length;
-    }
+        resFormat = format.split('.')[1].length;
+      }
       defValue = parseFloat((1.234566789).toFixed(resFormat))
     } else if (type === 'date') {
       if (format) {
@@ -66,16 +66,19 @@ const ModalWindow = ({ visible,
       defValue = moment(new Date()).format(resFormat);
     }
     const newProperty = {                  
-        [newColumnName.toLocaleLowerCase()] : [defValue, `${type}`]  
+      [newColumnName.toLocaleLowerCase()] : [defValue, `${type}`]  
     };
     if (format !== "text") {
       newProperty[newColumnName.toLocaleLowerCase()].push(resFormat);
     }
     const newRows = rows.map(item => ({...item, ...newProperty}));
-    localStorage.setItem("tableColumns", JSON.stringify(columns));
     setRows(newRows);
     handleClose();
   }
+
+  useEffect(()=>{
+    localStorage.setItem("tableColumns", JSON.stringify(columns));
+  }, [columns])
 
   return (
     <Modal 
@@ -88,8 +91,9 @@ const ModalWindow = ({ visible,
       <Modal.Body>
         <Form>
           <Form.Group className='mb-3' controlId='exampleForm.ControlInput1'>
-            <Form.Label>NAME</Form.Label>
+            <Form.Label className='form-label'>NAME</Form.Label>
             <Form.Control
+              className='form-control'
               type='text'
               placeholder='New column title'
               value={newColumnName}
@@ -101,8 +105,8 @@ const ModalWindow = ({ visible,
             className='mb-3'
             controlId='exampleForm.ControlSelect1'
           >
-            <Form.Label>TYPE</Form.Label>
-            <Form.Select onInput={changeType}>
+            <Form.Label className='form-label'>TYPE</Form.Label>
+            <Form.Select className='form-select' onInput={changeType}>
               <option value='text'>Text</option>
               <option value='number'>Number</option>
               <option value='date'>Date</option>
@@ -126,7 +130,8 @@ const ModalWindow = ({ visible,
         <Button variant='secondary' onClick={handleClose}>
           Close
         </Button>
-        <Button variant='primary' 
+        <Button 
+          variant='primary' 
           onClick={addNewColumn}
           disabled={save}
         >

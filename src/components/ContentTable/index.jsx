@@ -26,7 +26,7 @@ const ContentTable = ({
       let newArray = filteredArr.filter(function (el) {
         let counter = 0;
         Object.keys(el).forEach((k) => {
-          if (k !== 'id') {
+          if (k !== 'id' && search[k] !== "\\") {
             const searchReg = new RegExp(`${search[k]}`, 'i');
             if (String(el[k][0]).match(searchReg)) {
               counter += 1;

@@ -17,7 +17,8 @@ const ContentTable = ({
   const [rowsState, setRowsState] = useState(rows);
   const [editedRow, setEditedRow] = useState();
   const [visible, setVisible] = useState(false);
-  const [search, setSearch] = useState();  
+  const [search, setSearch] = useState();
+  const [saveActive, setSaveActive] = useState(true)
 
   useEffect(() => {
     const filteredArr = rows;
@@ -54,6 +55,7 @@ const ContentTable = ({
     setIsEditMode(true);
     setEditedRow(undefined);
     setRowIDToEdit(rowID);
+    setSaveActive(true);
   }
 
   const removeRow = (rowID) => {
@@ -77,20 +79,41 @@ const ContentTable = ({
   }
 
   const onChangeField = (e, rowID) => {
-    const { name: fieldName, value } = e.target;
+    let { name: fieldName, value } = e.target;
     const editedRowField = rowsState.filter(function(row) {
       return row.id === rowID;
     })[0][fieldName];
-    let newDateValue = value;
+    let regexp = /[0-9]/g;
+    if (editedRowField[1] === 'text' && fieldName !== "email") {
+      e.target.value = value.replace(regexp, '');
+    }
+    if (fieldName === "email") {
+      regexp = /^([A-Za-z0-9_\-\.])+@([A-Za-z0-9_\-\.])+\.([A-Za-z]{2,4})$/g;
+      if (!value.match(regexp)) {
+        setSaveActive(true);
+      } else {
+        setSaveActive(false);
+      }
+    } else if (fieldName === "gental") {
+      regexp = /^([F|f]emale)|([M|m]ale)$/g;
+      if (!value.match(regexp)) {
+        setSaveActive(true);
+      } else {
+        setSaveActive(false);
+      }
+    } else {
+      setSaveActive(false);
+    }
+    let newValue = value;
     if (editedRowField[1] === 'date') {
-        newDateValue = moment(value).format('DD.MM.YYYY');
+        newValue = moment(value).format('DD.MM.YYYY');
       if (editedRowField.length === 3) {
-        newDateValue = moment(value).format(editedRowField[2]);
+        newValue = moment(value).format(editedRowField[2]);
       }
     } else if (editedRowField[1] === 'number') {
-      newDateValue = parseFloat(parseFloat(value).toFixed(editedRowField[2]))
-    }
-    const fieldArray = [newDateValue, e.target.type];
+      newValue = parseFloat(parseFloat(value).toFixed(editedRowField[2]))
+    } 
+    const fieldArray = [newValue, e.target.type];
     if (editedRowField.length === 3) {
       fieldArray.push(editedRowField[2]);
     }
@@ -227,7 +250,7 @@ const ContentTable = ({
               {actions &&
           <td className='table-cell'>
             { isEditMode && rowIDToEdit === row.id
-              ? <button className='custom-table__action-btn' onClick={ () => saveRowChanges() } disabled={!editedRow}>
+              ? <button className='custom-table__action-btn' onClick={ () => saveRowChanges() } disabled={saveActive}>
                 <Save />
               </button>
               : <button className='custom-table__action-btn' onClick={ () => editRow(row.id) } >

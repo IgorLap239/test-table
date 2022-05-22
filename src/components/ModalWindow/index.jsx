@@ -13,7 +13,7 @@ const ModalWindow = ({ visible,
   const [newColumnName, setNewColumnName] = useState('');
   const [type, setType] = useState('text');
   const [format, setFormat] = useState('');
-  const [save, setSave] = useState(false);
+  const [save, setSave] = useState(true);
 
   const handleClose = () => {
     setNewColumnName('');
@@ -21,6 +21,14 @@ const ModalWindow = ({ visible,
     setFormat('');
     setVisible(false);
   }
+
+  useEffect(()=> {
+    if (newColumnName) {
+      setSave(false)
+    } else {
+      setSave(true)
+    }
+  }, [newColumnName])
 
   const changeType = (e) => {
     setType(e.target.value);
@@ -31,14 +39,14 @@ const ModalWindow = ({ visible,
 
   const checkFormat = (e) => {
     const { value } = e.target;
-    let reg = /.*/;
+    let regexp = /.*/;
     if (type === 'number') {
-      reg = /^0$|(^0\.(0{1,8})?)$/;
+      regexp = /^0$|(^0\.(0{1,8})?)$/;
     } else if (type === 'date') {
-      reg = /^(?:(?:дд|ДД|dd|DD|мм|ММ|mm|MM|гггг|ГГГГ|гг|ГГ|yy|yyyy|YY|YYYY))(?:\/|-|\.)(?:(?:дд|ДД|dd|DD|мм|ММ|mm|MM|гггг|ГГГГ|гг|ГГ|yy|yyyy|YY|YYYY))(?:\/|-|\.)(?:(?:дд|ДД|dd|DD|мм|ММ|mm|MM|гггг|ГГГГ|гг|ГГ|yyyy|YYYY|YY|yy))$/
+      regexp = /^(?:(?:дд|ДД|dd|DD|мм|ММ|mm|MM|гггг|ГГГГ|гг|ГГ|yy|yyyy|YY|YYYY))(?:\/|-|\.)(?:(?:дд|ДД|dd|DD|мм|ММ|mm|MM|гггг|ГГГГ|гг|ГГ|yy|yyyy|YY|YYYY))(?:\/|-|\.)(?:(?:дд|ДД|dd|DD|мм|ММ|mm|MM|гггг|ГГГГ|гг|ГГ|yyyy|YYYY|YY|yy))$/
     }
     setFormat(value);
-    if (!value.match(reg)) {
+    if (!value.match(regexp)) {
       setSave(true)
     } else {
       setFormat(value);

@@ -213,7 +213,7 @@ const ContentTable = ({
                 <input 
                   className='search' 
                   type="text" 
-                  placeholder="Фильтр"
+                  placeholder="Filter"
                   onInput={(e)=>changeSearchValue(e, column.field)}
                 />
                 <span onClick={clearInput}>×</span>
